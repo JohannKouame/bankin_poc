@@ -1,9 +1,8 @@
 import logging
+import json
 
 from src.client.mistral import MistralClient, LOGGING_VARIABLE
-from src.utils.string_sanitizer import StringSanitizer
 from src.utils.loader import Loader
-import json
 
 
 class MistralRepository:
@@ -11,93 +10,85 @@ class MistralRepository:
         self.client = client
         self.categories = Loader.json_loader("categories_mapping.json")
 
-    # determine user goal
     def what_is_user_goal(self, message: str) -> dict:
-        # Build prompt
-        prompt = (f"""Analyse le texte utilisateur et extrais STRICTEMENT les informations suivantes :
-                    1) categorie_depense  
-                       - Doit être UNE SEULE valeur parmi :
-                         {self.categories.keys()}
-                    
-                    2) montant_cible  
-                       - Valeur numérique uniquement
-                       - Sans devise
-                       - Peut être :
-                            • un montant explicite (ex: 600)
-                            • un pourcentage (ex: +20 ou -15)
-                    
-                    3) horizon  
-                       - Durée normalisée en mois, ne mentionne pas le mot "mois" (ex: 3, 6, 14)
-                    
-                    Contraintes importantes :
-                    
-                    - Réponds UNIQUEMENT en JSON valide
-                    - Aucun texte hors JSON
-                    - Aucune devise
-                    - Aucune explication
-                    - Si une information est absente → utiliser "unprecised"
-                    
-                    Texte utilisateur :
-                    {message}
-                    """
-                  )
+        """
+        Analyse le texte utilisateur pour extraire l'objectif financier.
+        """
+        prompt = f"""Analyse le texte utilisateur et extrais STRICTEMENT les informations suivantes :
+        1) categorie_depense (une seule valeur parmi {list(self.categories.keys())})
+        2) montant_cible (valeur numérique, peut être un montant ou pourcentage)
+        3) horizon (en mois)
+
+        Contraintes :
+        - Réponds UNIQUEMENT en JSON valide
+        - Si information absente → "unprecised"
+
+        Texte utilisateur :
+        {message}
+        """
 
         response = self.client.chat_completion(prompt)
-        logging.debug(f'{LOGGING_VARIABLE} {response}')
+        logging.debug(f"{LOGGING_VARIABLE} what_is_user_goal: {response}")
         return response
 
-    # propose optimisation plan to user
     def propose_optimisation_plan(self, user_goal: dict, stats: dict, message: str) -> str:
-        # Build prompt
-        prompt = (f"""
-                    Le JSON suivant contient un résumé des dépenses de l'utilisateur sur les derniers mois :
-                    {json.dumps(stats)}
-                    L'utilisateur souhaite atteindre l'objectif suivant :
-                        - Categorie ciblée hors utilisateur : {self.categories.keys()}
-                        - Catégories ciblée par l'utilisateur : {user_goal["categories"]}
-                        - Montant cible : {user_goal["target_amount"]}
-                        - Horizon : {user_goal["duration"]}
-                    En utilisant les informations du JSON, propose **3 plans distincts** qui permettraient à l'utilisateur d'atteindre cet objectif.
-                    Chaque plan doit inclure :
-                    1. Les catégories ciblées
-                    2. Le montant à économiser par catégorie (en euros)
-                    3. Une brève justification basée sur les habitudes de dépense (opérations fréquentes, montant moyen, volatilité)
-                    4. Horizon (en fonction de l'horizon souhaitée par l'utilisateur)
-                    N'oublie pas de traduire les catégories en français"""
-
-                  )
-
-        response = self.client.chat_completion(prompt)
-
-        logging.debug(f'{LOGGING_VARIABLE} {response}')
-        return response
-
-    # Answer to any question from the user
-    def chat(self, message: str) -> str:
-
-        # Load knowledge base
-        monthly_summary = Loader.csv_loader("data/processed/monthly_summary.csv")
-        sub_categories_stats = Loader.csv_loader("data/processed/sub_categories_stats.csv")
-
-        logging.debug(f"{LOGGING_VARIABLE} Aperçu de monthly_summary:\n{monthly_summary.head()}")
-        logging.debug(f"{LOGGING_VARIABLE} Aperçu de sub_categories_stats:\n{sub_categories_stats.head()}")
-
-        # Convert knowledge base data into dict to be sent easily to llm
-        monthly_summary_dict = monthly_summary.to_dict(orient='records')
-        sub_categories_stats_dict = sub_categories_stats.to_dict(orient='records')
-
-        # Build prompt
+        """
+        Génère un plan ou une analyse synthétique selon les données et l'objectif.
+        """
         prompt = f"""
-            Tu es un assistant financier. Tu disposes des données suivantes pour l'utilisateur :
-            Monthly Summary:
-            {monthly_summary_dict}
-            Sub-category Statistics:
-            {sub_categories_stats_dict}
-            Réponds à l'utilisateur de façon claire et précise en tenant compte de ces données.
-            Question de l'utilisateur : {message}
-            """
+        Tu es un assistant financier. Les données suivantes sont disponibles :
+        Stats mensuelles: {json.dumps(stats)}
 
+        Message utilisateur : "{message}"
+        Objectif utilisateur : {user_goal}
+
+        Instructions :
+        1) Reste concis et synthétique, max 1 ligne par section
+        2) Utilise un tableau si nécessaire
+        3) Donne un résumé clair avant les détails
+        4) Ne pose **aucune question à l'utilisateur**
+        5) Ajoute des emojis pour rendre agréable
+        6) Traduis les catégories en français
+        7) N'excède pas 20 phrases
+        """
         response = self.client.chat_completion(prompt)
-
-        logging.debug(f"{LOGGING_VARIABLE} \n{response}")
+        logging.debug(f"{LOGGING_VARIABLE} propose_optimisation_plan: {response}")
         return response
+
+    def chat(self, message: str) -> str:
+        """
+        Répond à tout message utilisateur en adaptant la réponse au type de message.
+        """
+        # Catégorisation simple
+        message_lower = message.lower()
+        salutations = ["hello", "hi", "bonjour", "salut"]
+        analyse_keywords = ["dépense", "budget", "mois", "catégorie", "augmentent", "réduire"]
+        optimisation_keywords = ["économiser", "plan", "objectif", "montant"]
+
+        if any(word in message_lower for word in salutations):
+            return "Bonjour ! Que puis-je faire pour toi ?"
+        elif any(word in message_lower for word in optimisation_keywords + analyse_keywords):
+            # Charger les données pour l'analyse
+            monthly_summary = Loader.csv_loader("data/processed/monthly_summary.csv")
+            sub_categories_stats = Loader.csv_loader("data/processed/sub_categories_stats.csv")
+
+            monthly_summary_dict = monthly_summary.to_dict(orient='records')
+            sub_categories_stats_dict = sub_categories_stats.to_dict(orient='records')
+
+            prompt = f"""
+            Tu es un assistant financier intelligent.
+            Monthly Summary: {monthly_summary_dict}
+            Sub-category Stats: {sub_categories_stats_dict}
+            Question utilisateur : {message}
+
+            Instructions :
+            - Sois clair et synthétique
+            - Utilise tableaux si nécessaire
+            - Ne pose **aucune question à l'utilisateur**
+            - Traduis les catégories en français
+            """
+            response = self.client.chat_completion(prompt)
+            logging.debug(f"{LOGGING_VARIABLE} chat: {response}")
+            return response
+        else:
+            return "Je n'ai pas compris, peux-tu reformuler ta question ?"
