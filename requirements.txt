@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+requests
+mistralai
+kagglehub
+python-json-logger
+scikit-learn
+matplotlib
