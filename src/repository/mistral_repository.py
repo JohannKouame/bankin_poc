@@ -1,5 +1,4 @@
 import logging
-from unicodedata import category
 
 from src.client.mistral import MistralClient, LOGGING_VARIABLE
 from src.utils.string_sanitizer import StringSanitizer
