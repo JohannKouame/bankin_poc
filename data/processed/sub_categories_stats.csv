@@ -1,0 +1,19 @@
+,sub_category,main_category,amount_std,amount_max,amount_min,amount_mean,amount_median,operation_count_std,operation_count_max,operation_count_min,operation_count_mean,operation_count_median
+0,business lunch,work,35.83,180.03,83.62,123.68,115.5,0.0,1,1,1.0,1.0
+1,clothing,shopping,145.2,348.0,17.0,213.25,259.75,0.0,1,1,1.0,1.0
+2,coffe,restaurent,147.08,557.2,60.5,324.5,331.69,0.0,1,1,1.0,1.0
+3,event,enjoyment,85.49,212.5,12.5,87.26,55.0,0.0,1,1,1.0,1.0
+4,film,enjoyment,424.1,993.25,12.0,235.49,55.0,0.0,1,1,1.0,1.0
+5,health,health,50.84,115.2,10.0,54.93,20.0,0.0,1,1,1.0,1.0
+6,joy,enjoyment,0.0,120.0,120.0,120.0,120.0,0.0,1,1,1.0,1.0
+7,learning,subscription,161.93,479.9,24.0,167.0,89.0,0.0,1,1,1.0,1.0
+8,market,grossery,69.88,288.67,48.0,172.88,171.78,0.0,1,1,1.0,1.0
+9,motel,work,0.0,675.0,675.0,675.0,675.0,0.0,1,1,1.0,1.0
+10,other,other,18.51,223.0,164.0,189.38,190.75,0.0,1,1,1.0,1.0
+11,phone,subscription,3.65,22.11,11.25,17.1,18.0,0.0,1,1,1.0,1.0
+12,rent,car,0.0,95.0,95.0,95.0,95.0,0.0,1,1,1.0,1.0
+13,restuarant,restaurent,129.12,481.93,64.8,248.42,263.55,0.0,1,1,1.0,1.0
+14,sport,subscription,34.9,98.0,2.46,67.13,68.15,0.0,1,1,1.0,1.0
+15,taxi,transport,12.8,47.1,11.3,29.09,28.03,0.0,1,1,1.0,1.0
+16,tech,subscription,0.0,25.0,25.0,25.0,25.0,0.0,1,1,1.0,1.0
+17,transport,transport,17.09,64.0,5.0,26.94,22.4,0.0,1,1,1.0,1.0
