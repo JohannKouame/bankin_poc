@@ -1,51 +1,57 @@
 import streamlit as st
 import logging
-import time
-from src.repository.mistral_repository import MistralRepository
 from src.client.mistral import MistralClient
+from src.repository.mistral_repository import MistralRepository
+from src.utils.loader import Loader
+from src.logger.logger import Logger
 
+LOGGING_VARIABLE = "[CHAT]"
 
-class ChatInterface:
+Logger()
 
-    @staticmethod
-    def display_chat():
-        mistral = MistralRepository(MistralClient())
+# Init model
+mistral = MistralRepository(MistralClient())
 
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+def display_chat():
+    """
+    Display chat and manage history
+    """
+    # Set chat memory
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-        # Afficher l'historique
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    # Display history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-        # Entrée utilisateur
-        if prompt := st.chat_input("Écrivez votre message ici..."):
-            st.session_state.messages.append({"role": "user", "content": prompt})
+    # Set and manage user input
+    if prompt := st.chat_input("Écrivez votre message ici..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        logging.debug(f"{LOGGING_VARIABLE} Utilisateur a envoyé : {prompt}")
 
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            logging.debug(f"Utilisateur a envoyé : {prompt}")
-
-            # Obtenir la réponse depuis MistralRepository
+        # Model response
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response = ""
             try:
-                response = mistral.chat(prompt)
+                # Streaming Mistral
+                stream = mistral.preprocess_and_answer(
+                    message=prompt,
+                    stats=Loader.csv_loader("data/processed/monthly_summary.csv").to_dict()
+                )
+
+                for token in stream:
+                    full_response += token
+                    placeholder.markdown(full_response)
+
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": full_response}
+                )
+                logging.debug(f"{LOGGING_VARIABLE} Réponse complète du modèle : {full_response}")
+
             except Exception as e:
-                logging.error(f"Erreur lors de l'appel au modèle : {e}")
-                response = "Erreur lors de l'appel au modèle, réessaie plus tard."
-
-            # Affichage progressif
-            with st.chat_message("assistant"):
-                placeholder = st.empty()
-                displayed_text = ""
-                if len(response.split()) < 50:
-                    placeholder.markdown(response)
-                else:
-                    with st.spinner("Mistral écrit sa réponse..."):
-                        for chunk in response.split(". "):
-                            displayed_text += chunk + ". "
-                            placeholder.markdown(displayed_text)
-                            time.sleep(0.05)
-
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            logging.debug(f"Réponse du modèle : {response}")
+                logging.error(f"{LOGGING_VARIABLE} Erreur lors de l'appel au modèle : {e}")
+                placeholder.markdown("Erreur lors de l'appel au modèle, réessayez plus tard.")
