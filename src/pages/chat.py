@@ -40,7 +40,7 @@ def display_chat():
                 # Streaming Mistral
                 stream = mistral.preprocess_and_answer(
                     message=prompt,
-                    stats=Loader.csv_loader("data/processed/monthly_summary.csv").to_dict()
+                    stats=Loader.csv_loader_and_formater("data/processed/monthly_summary.csv")
                 )
 
                 for token in stream:

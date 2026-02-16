@@ -39,3 +39,34 @@ class Loader:
     @staticmethod
     def csv_loader(path: str) -> pd.DataFrame:
         return pd.read_csv(path, index_col=0)
+
+    @staticmethod
+    def csv_loader_and_formater(path: str) -> str:
+        df = Loader.csv_loader(path)
+        df = df.drop(columns=[col for col in df.columns if "Unnamed" in col], errors="ignore")
+
+        # Aggregate
+        grouped = (
+            df.groupby(["year_month", "main_category", "sub_category"], as_index=False)
+            .agg({
+                "amount": "sum",
+                "operation_count": "sum"
+            })
+        )
+
+        # Transformation en dictionnaire imbriqué
+        result = {}
+
+        for _, row in grouped.iterrows():
+            ym = row["year_month"]
+            mc = row["main_category"]
+            sc = row["sub_category"]
+
+            result.setdefault(ym, {})
+            result[ym].setdefault(mc, {})
+            result[ym][mc][sc] = {
+                "amount": row["amount"],
+                "operation_count": int(row["operation_count"])
+            }
+
+        return json.dumps(result, indent=4, ensure_ascii=False)
