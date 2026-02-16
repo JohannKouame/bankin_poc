@@ -50,6 +50,7 @@ def run_streamlit():
 
         return
     logging.info("Chat and dashboard init")
+    st.html("""<a href="https://github.com/JohannKouame/bankin_poc">Lien du repo Github</a>""")
     display_dashboard()
     display_chat()
 
