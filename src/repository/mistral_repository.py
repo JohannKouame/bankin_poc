@@ -11,13 +11,6 @@ class MistralRepository:
         self.client = client
         self.categories = Loader.json_loader("categories_mapping.json")
 
-
-    # Clean message
-    def clean_message(self, message) -> str:
-        cleaned_message = StringSanitizer.remove_html_tags(message)
-        cleaned_message = StringSanitizer.remove_lines_break(cleaned_message)
-        return cleaned_message
-
     # determine user goal
     def what_is_user_goal(self, message: str) -> dict:
         # Build prompt
@@ -50,7 +43,7 @@ class MistralRepository:
                   )
 
         response = self.client.chat_completion(prompt)
-        logging.info(f'{LOGGING_VARIABLE} {response}')
+        logging.debug(f'{LOGGING_VARIABLE} {response}')
         return response
 
     # propose optimisation plan to user
@@ -76,7 +69,7 @@ class MistralRepository:
 
         response = self.client.chat_completion(prompt)
 
-        logging.info(f'{LOGGING_VARIABLE} {response}')
+        logging.debug(f'{LOGGING_VARIABLE} {response}')
         return response
 
     # Answer to any question from the user
@@ -106,5 +99,5 @@ class MistralRepository:
 
         response = self.client.chat_completion(prompt)
 
-        logging.info(f"{LOGGING_VARIABLE} \n{response}")
+        logging.debug(f"{LOGGING_VARIABLE} \n{response}")
         return response
