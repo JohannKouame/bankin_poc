@@ -25,7 +25,8 @@ class MistralClient:
                 model=self.default_model,
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
-                max_tokens=1000
+                max_tokens=1000,
+                temperature=0
             )
 
         return res.model_dump()["choices"][0]["message"]["content"]
@@ -43,7 +44,8 @@ class MistralClient:
             stream_response = mistral.chat.stream(
                 model=self.default_model,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=1000
+                max_tokens=1000,
+                temperature=0
             )
 
             for chunk in stream_response:

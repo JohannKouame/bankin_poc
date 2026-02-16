@@ -51,7 +51,7 @@ class MistralRepository:
                         Texte utilisateur : {message}
                      """
         response = self.client.chat_completion(prompt)
-        logging.info(f'{LOGGING_VARIABLE} {response}')
+        logging.info(f'{LOGGING_VARIABLE} detect_target_category {response}')
         return response
 
     def propose_optimisation_plan(self, message: str, stats: dict, stream: bool = True) -> str:
@@ -83,7 +83,10 @@ class MistralRepository:
                 7) N'excède pas 20 phrases
                 
                 Répond uniquement avec le texte de réponse. Aucun décorateur ni élément autour 
-                de la réponse comme "réponse" ou "voici la réponse"
+                de la réponse comme "réponse" ou "voici la réponse".
+                
+                Utilise uniquement les chiffres fournis.
+                N’invente strictement aucun montant.
                 """
 
         if stream:
@@ -118,7 +121,7 @@ class MistralRepository:
         else:
             response = self.client.chat_completion_stream(prompt)
 
-        logging.debug(f"{LOGGING_VARIABLE} propose_optimisation_plan: {response}")
+        logging.debug(f"{LOGGING_VARIABLE} answer_to_greeting: {response}")
 
         return response
 
@@ -140,7 +143,8 @@ class MistralRepository:
                 de la réponse comme "réponse" ou "voici la réponse"
                 Ajoute des emojis pour être plus friendly. N'en abuse pas non plus.
                 N'oublie pas que tu es un PoC conçu pour permettre aux utilisateur de simuler l'incidence
-                des décisions et de leurs actions sur leur budget et leurs finances
+                des décisions et de leurs actions sur leur budget et leurs finances.
+                
                 Texte utilisateur : {message}
                 """
         if stream:
@@ -148,7 +152,7 @@ class MistralRepository:
         else:
             response = self.client.chat_completion_stream(prompt)
 
-        logging.debug(f"{LOGGING_VARIABLE} propose_optimisation_plan: {response}")
+        logging.debug(f"{LOGGING_VARIABLE} answer_to_generality: {response}")
 
         return response
 
@@ -180,15 +184,18 @@ class MistralRepository:
                 6) Traduis les catégories en français
                 7) N'excède pas 20 phrases
                 
-                Répond uniquement avec le texte de réponse. Aucun décorateur ni élément autour 
-                de la réponse comme "réponse" ou "voici la réponse"
+                Répond uniquement avec le texte de réponse. Aucun décorateur ni élément autour.
+                de la réponse comme "réponse" ou "voici la réponse".
+                Utilise uniquement les chiffres fournis.
+                N’invente aucun montant.
+                Ne recalcule rien.
                 """
         if stream:
             response = self.client.chat_completion(prompt)
         else:
             response = self.client.chat_completion_stream(prompt)
 
-        logging.debug(f"{LOGGING_VARIABLE} propose_optimisation_plan: {response}")
+        logging.debug(f"{LOGGING_VARIABLE} display_summary: {response}")
 
         return response
 
@@ -206,7 +213,7 @@ class MistralRepository:
         logging.debug(f"{LOGGING_VARIABLE} chat: {response}")
         return response
 
-    def preprocess_and_answer(self, message: str, stats: dict = None, stream: bool = True) -> str:
+    def preprocess_and_answer(self, message: str, stats: dict|str = None, stream: bool = True) -> str:
 
         """
         Analyse user prompt and detect the financial goal.
@@ -236,3 +243,5 @@ class MistralRepository:
             case _:
                 return self.chat(message=message)
 
+if __name__ == '__main__':
+    print(Loader.csv_loader_and_formater("../../data/processed/monthly_summary.csv"))
