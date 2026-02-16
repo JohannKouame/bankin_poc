@@ -12,17 +12,16 @@ class MistralRepository:
         self.client = client
         self.categories = Loader.json_loader("categories_mapping.json")
 
+
+    # Clean message
     def clean_message(self, message) -> str:
-        # Clean message
         cleaned_message = StringSanitizer.remove_html_tags(message)
         cleaned_message = StringSanitizer.remove_lines_break(cleaned_message)
         return cleaned_message
 
+    # determine user goal
     def what_is_user_goal(self, message: str) -> dict:
-        cleaned_message = self.clean_message(message)
-
-        categories = Loader.json_loader("categories_mapping.yml")
-
+        # Build prompt
         prompt = (f"""Analyse le texte utilisateur et extrais STRICTEMENT les informations suivantes :
                     1) categorie_depense  
                        - Doit être UNE SEULE valeur parmi :
@@ -47,17 +46,17 @@ class MistralRepository:
                     - Si une information est absente → utiliser "unprecised"
                     
                     Texte utilisateur :
-                    {cleaned_message}
+                    {message}
                     """
                   )
 
         response = self.client.chat_completion(prompt)
-        #json_response = StringSanitizer.remove_json_tags(response)
         logging.info(f'{LOGGING_VARIABLE} {response}')
         return response
 
+    # propose optimisation plan to user
     def propose_optimisation_plan(self, user_goal: dict, stats: dict, message: str) -> str:
-        cleaned_message = self.clean_message(message)
+        # Build prompt
         prompt = (f"""
                     Le JSON suivant contient un résumé des dépenses de l'utilisateur sur les derniers mois :
                     {json.dumps(stats)}
@@ -77,40 +76,36 @@ class MistralRepository:
                   )
 
         response = self.client.chat_completion(prompt)
+
         logging.info(f'{LOGGING_VARIABLE} {response}')
         return response
 
+    # Answer to any question from the user
     def chat(self, message: str) -> str:
-        # --- Charger les données ---
+
+        # Load knowledge base
         monthly_summary = Loader.csv_loader("data/processed/monthly_summary.csv")
         sub_categories_stats = Loader.csv_loader("data/processed/sub_categories_stats.csv")
 
         logging.debug(f"{LOGGING_VARIABLE} Aperçu de monthly_summary:\n{monthly_summary.head()}")
         logging.debug(f"{LOGGING_VARIABLE} Aperçu de sub_categories_stats:\n{sub_categories_stats.head()}")
 
-        # --- Convertir en dictionnaire pour faciliter l’inclusion dans le prompt ---
+        # Convert knowledge base data into dict to be sent easily to llm
         monthly_summary_dict = monthly_summary.to_dict(orient='records')
         sub_categories_stats_dict = sub_categories_stats.to_dict(orient='records')
 
-        # --- Construire le prompt contextuel ---
+        # Build prompt
         prompt = f"""
             Tu es un assistant financier. Tu disposes des données suivantes pour l'utilisateur :
-            
             Monthly Summary:
             {monthly_summary_dict}
-            
             Sub-category Statistics:
             {sub_categories_stats_dict}
-            
             Réponds à l'utilisateur de façon claire et précise en tenant compte de ces données.
-            
             Question de l'utilisateur : {message}
             """
 
-        logging.debug(f"{LOGGING_VARIABLE} Prompt envoyé au modèle:\n{prompt}")
-
-        # --- Appel au modèle ---
         response = self.client.chat_completion(prompt)
 
-        logging.info(f"{LOGGING_VARIABLE} Réponse du modèle:\n{response}")
+        logging.info(f"{LOGGING_VARIABLE} \n{response}")
         return response
