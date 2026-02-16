@@ -78,7 +78,7 @@ class MistralRepository:
                 2) Utilise un tableau si nécessaire
                 3) Donne un résumé clair avant les détails
                 4) Ne pose aucune question
-                5) Ajoute des emojis
+                5) Ajoute des emojis, n'en abuse pas non plus
                 6) Traduis les catégories en français
                 7) N'excède pas 20 phrases
                 
@@ -110,7 +110,7 @@ class MistralRepository:
                 Réponds très brièvement au prompt de l'utilisateur.
                 Répond uniquement avec le texte de réponse. Aucun décorateur ni élément autour 
                 de la réponse comme "réponse" ou "voici la réponse"
-                Ajoute des emojis pour être plus friendly.
+                Ajoute des emojis pour être plus friendly. N'en abuse pas non plus.
                 Texte utilisateur : {message}
                 """
         if stream:
@@ -138,7 +138,7 @@ class MistralRepository:
                 Réponds très brièvement au prompt de l'utilisateur.
                 Répond uniquement avec le texte de réponse. Aucun décorateur ni élément autour 
                 de la réponse comme "réponse" ou "voici la réponse"
-                Ajoute des emojis pour être plus friendly.
+                Ajoute des emojis pour être plus friendly. N'en abuse pas non plus.
                 N'oublie pas que tu es un PoC conçu pour permettre aux utilisateur de simuler l'incidence
                 des décisions et de leurs actions sur leur budget et leurs finances
                 Texte utilisateur : {message}
@@ -176,7 +176,7 @@ class MistralRepository:
                 2) Utilise un tableau si nécessaire
                 3) Donne un résumé clair avant les détails
                 4) Ne pose aucune question
-                5) Ajoute des emojis
+                5) Ajoute des emojis, n'en abuse pas non plus
                 6) Traduis les catégories en français
                 7) N'excède pas 20 phrases
                 
