@@ -9,6 +9,7 @@ services:
       - .env
     volumes:
       - .:/app
+    command: tail -f /dev/null
 
   streamlit:
     build: .

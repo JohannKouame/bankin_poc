@@ -1,76 +1,69 @@
 import streamlit as st
+import click
 import logging
-import pandas as pd
 
 from src.client.mistral import MistralClient
 from src.repository.mistral_repository import MistralRepository
 from src.utils.loader import Loader
-# --- Logger pour le terminal ---
-logger = logging.getLogger("bankin_llm")
-logger.setLevel(logging.DEBUG)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-logger.info("Démarrage de l'application Streamlit")
+from src.logger.logger import Logger
 
-st.title("POC Bankin Simulation")
-st.write("Bienvenue dans votre assistant d'analyse de dépenses !")
+@click.command()
+def run_streamlit():
+    Logger()
 
-# --- Initialisation du client Mistral ---
-logger.info("Initialisation du client Mistral")
-mistral = MistralRepository(MistralClient())
+    st.title("POC Bankin Simulation")
+    st.write("Bienvenue dans votre assistant d'analyse de dépenses !")
 
+    # Init Mistral model
+    logging.info("Initialisation du client Mistral")
+    mistral = MistralRepository(MistralClient())
 
+    # Load monthly_summary
+    monthly_summary = Loader.csv_loader("data/processed/monthly_summary.csv")
 
+    # Get some information about user transaction
+    n_months = len(monthly_summary["year_month"].unique())
+    total_spent = monthly_summary['amount'].sum()
+    avg_per_month = monthly_summary['amount'].mean()
 
+    # Display user transaction summary
+    with st.expander("Profil et contexte de la personne"):
+        col1, col2= st.columns(2)
+        col1.metric("Dépenses Total", f"{round(total_spent, 2)} €")
+        col2.metric("Dépense moyenne", f"{round(avg_per_month, 2)} €")
 
-monthly_summary = Loader.csv_loader("data/processed/monthly_summary.csv")
+        st.subheader("Aperçu des transactions")
+        st.dataframe(monthly_summary.head(5))
 
-n_months = len(monthly_summary["year_month"].unique())
-# --- Résumé rapide ---
-total_spent = monthly_summary['amount'].sum()
-avg_per_month = monthly_summary['amount'].mean()
-top_categories = monthly_summary.groupby('main_category')['amount'].sum().sort_values(ascending=False).head(3)
+    # Set conversation history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-# --- Encadré profil utilisateur fictif ---
-with st.expander("Profil et contexte de la personne"):
-    col1, col2= st.columns(2)
-    col1.metric("Dépenses Total", f"{round(total_spent, 2)} €")
-    col2.metric("Dépense moyenne", f"{round(avg_per_month, 2)} €")
-    #col3.metric("Humidity", "86%", "4%")
-    st.write("Top 3 catégories :", ", ".join(top_categories.index))
+    # Display conversation history
+    for message in st.session_state.messages:
+        role = message["role"]
+        content = message["content"]
+        with st.chat_message(role):
+            st.markdown(content)
 
-    st.subheader("Aperçu des transactions")
-    st.dataframe(monthly_summary.head(5))  # Affiche les 5 premières lignes
+    # Set user input box
+    if prompt := st.chat_input("Écrivez votre message ici..."):
+        # Add user message to conversation history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        logging.debug(f"Utilisateur a envoyé : {prompt}")
 
-# --- Historique de la conversation ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+        # Call mistral model
+        with st.chat_message("assistant"):
+            try:
+                response = mistral.chat(prompt)
+                st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                logging.debug(f"Réponse du modèle : {response}")
+            except Exception as e:
+                logging.error(f"Erreur lors de l'appel au modèle : {e}")
+                st.error(f"Erreur lors de l'appel au modèle : {e}")
 
-# --- Affichage des messages précédents ---
-for message in st.session_state.messages:
-    role = message["role"]
-    content = message["content"]
-    with st.chat_message(role):
-        st.markdown(content)
-
-# --- Input utilisateur ---
-if prompt := st.chat_input("Écrivez votre message ici..."):
-    # Ajout du message utilisateur
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    logger.debug(f"Utilisateur a envoyé : {prompt}")
-
-    # Appel au modèle Mistral pour générer la réponse
-    with st.chat_message("assistant"):
-        try:
-            response = mistral.chat(prompt)
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            logger.debug(f"Réponse du modèle : {response}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'appel au modèle : {e}")
-            st.error(f"Erreur lors de l'appel au modèle : {e}")
+if __name__ == '__main__':
+    run_streamlit()

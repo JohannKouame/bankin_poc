@@ -19,4 +19,5 @@ build_features:
 
 .PHONY: run_streamlit
 run_streamlit:
-	docker compose run --rm -e PYTHONPATH=/app python python src/command/run_streamlit.py
+	docker compose up streamlit
+
