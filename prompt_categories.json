@@ -1,0 +1,7 @@
+{
+  "greeting": "tous les prompts en rapport avec une salutation",
+  "generality": "tous les prompts qui demande ton objectif, ton rôle ou tes fonctionnalités",
+  "summary": "tous les prompts qui demande un bilan, un résumé, un aperçu ou toute autre informations ou question à propos des données utiliser pour le poc des dépenses sur une période donnée",
+  "optimization": "tous les prompts qui demandent une stratégie d'optimisation de finance (gagner de l'argent, économiser sur un budget etc)",
+  "unspecified" : "tous les prompts que tu n'arrives pas à catégoriser"
+}
