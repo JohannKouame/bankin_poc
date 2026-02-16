@@ -1,0 +1,32 @@
+{
+  "Restuarant": "restaurent/restuarant",
+  "Coffe": "restaurent/coffe",
+
+  "Market": "grossery/market",
+  "Clothing": "shopping/clothing",
+
+  "Transport": "transport",
+  "Taxi": "transport/taxi",
+
+  "Learning": "subscription/learning",
+  "Tech": "subscription/tech",
+  "Phone": "subscription/phone",
+  "Sport": "subscription/sport",
+
+  "Rent Car": "car/rent",
+  "Fuel": "car/fluent",
+
+  "Events": "enjoyment/event",
+  "Film/enjoyment": "enjoyment/film",
+  "Travel": "enjoyment/film",
+  "joy": "enjoyment/joy",
+
+  "Business lunch": "work/business lunch",
+  "Motel": "work/motel",
+  "business_expenses": "work/business_expenses",
+
+  "Health": "health",
+
+  "Communal": "other",
+  "Other": "other"
+}
