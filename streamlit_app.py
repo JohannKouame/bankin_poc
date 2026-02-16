@@ -1,23 +1,45 @@
 import streamlit as st
+import logging
 
+from src.pages.dashboard import display_dashboard
+from src.pages.chat import display_chat
 from src.logger.logger import Logger
-from src.pages.dashboard import Dashboard
-from src.pages.chat import ChatInterface
-
 
 def run_streamlit():
     Logger()
+    st.set_page_config(page_title="POC Bankin Simulation", layout="wide")
     st.title("POC Bankin Simulation by Johann KOUAMÉ")
 
-    # Affichage intro
-    Dashboard.show_intro()
+    st.markdown(
+        """
+        <div style="
+            background-color: #F5F7FA;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #E0E0E0;
+            margin-bottom: 15px;
+        ">
+            <h4 style="margin-top:0;">Bienvenue dans votre assistant d’analyse de dépenses</h4>
+            <p style="margin-bottom:0;">
+                Cette application simule un assistant d’analyse de dépenses basé
+                sur des transactions fictives.
+                Consultez le récapitulatif, choisissez une période, puis posez vos
+                questions dans le chat.
+                Exemples :
+            </p>
+            <ul>
+                <li>Où est-ce que je dépense le plus ?</li>
+                <li>Mes dépenses augmentent-elles ?</li>
+                <li>Comment optimiser mon budget ?</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Initialiser la donnée et le dashboard
-    df = Dashboard.load_data("data/processed/monthly_summary.csv")
-    Dashboard.show_metrics(df)
-
-    # Chat
-    ChatInterface.display_chat()
+    logging.info("Chat and dashboard init")
+    display_dashboard()
+    display_chat()
 
 
 if __name__ == "__main__":
