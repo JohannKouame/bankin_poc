@@ -37,8 +37,12 @@ class Loader:
 
 
     @staticmethod
-    def csv_loader(path: str) -> pd.DataFrame:
-        return pd.read_csv(path, index_col=0)
+    def csv_loader(path: str, ignore_first_col: bool = False) -> pd.DataFrame:
+        if ignore_first_col:
+            return pd.read_csv(path, index_col=0)
+        else:
+            return pd.read_csv(path)
+
 
     @staticmethod
     def csv_loader_and_formater(path: str) -> str:
