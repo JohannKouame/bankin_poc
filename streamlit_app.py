@@ -48,8 +48,22 @@ def run_streamlit():
 
         return
     logging.info("Chat and dashboard init")
+    st.html("""<a href="https://github.com/JohannKouame/account_assistant">Lien du repo Github</a>""")
+
+
     display_dashboard()
+
+    st.markdown("""---""")
+
     display_chat()
+
+    st.markdown("""---""")
+    st.markdown("**Exemple de questions à poser au modèle**")
+
+    col1, col2, col3 = st.columns(3)
+    col1.info("Où est-ce que je dépense le plus ?")
+    col2.info("Mes dépenses augmentent-elles chaque mois ?")
+    col3.info("Propose moi un plan pour dégager 600€ en 3 mois ?")
 
 
 if __name__ == "__main__":
