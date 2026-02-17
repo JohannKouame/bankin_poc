@@ -19,7 +19,7 @@ class Loader:
             pd.DataFrame: Contenu du dataset sous forme de DataFrame
         """
 
-        df = kagglehub.load_dataset(
+        df = kagglehub.dataset_load(
             KaggleDatasetAdapter.PANDAS,
             url,
             file_name,
